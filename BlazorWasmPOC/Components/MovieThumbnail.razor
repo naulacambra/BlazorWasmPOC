@@ -1,0 +1,11 @@
+﻿@using BlazorWasmPOC.Models
+
+<div class="movie-thumbnail__wrapper" style="background-image: url('@Movie.Poster.imageUrl')">
+    <h3 class="movie-thumbnail__title">@Movie.Title</h3>
+</div>
+
+
+@code {
+    [Parameter]
+    public Movie Movie { get; set; } = new Movie();
+}

@@ -1,0 +1,59 @@
+﻿@page "/movies"
+
+@using BlazorWasmPOC.Components
+@using BlazorWasmPOC.Models
+@using RestSharp
+
+@inject RestClient _restClient
+@inject IConfiguration Configuration
+
+<PageTitle>Movies</PageTitle>
+
+<h1>Movies</h1>
+
+<input @bind-value:event="oninput" @bind-value="movieQuery" @onkeyup="Autocomplete" placeholder="Type movie name" />
+
+@if (isLoading)
+{
+    <span>...</span>
+}
+else
+{
+    <div class="movies__wrapper">
+        @foreach (var movie in results)
+        {
+            <MovieThumbnail Movie="movie" />
+        }
+    </div>
+}
+
+
+@code {
+    private List<Movie> results = new List<Movie>();
+    public string movieQuery = "";
+    private bool isLoading = false;
+
+    protected override void OnInitialized()
+    {
+        _restClient.Options.BaseUrl = new Uri(Configuration.GetValue<string>("API:Movies:BaseUrl"));
+    }
+
+    private async Task Autocomplete()
+    {
+        isLoading = true;
+        var request = new RestRequest("auto-complete", Method.Get);
+        request.AddHeader("X-RapidAPI-Key", Configuration.GetValue<string>("API:Movies:RapidAPI-Key"));
+        request.AddHeader("X-RapidAPI-Host", Configuration.GetValue<string>("API:Movies:RapidAPI-Host"));
+
+        request.AddParameter("q", movieQuery);
+
+        var response = await _restClient.ExecuteAsync<MovieResponse>(request);
+        results = response.Data.d;
+        isLoading = false;
+    }
+
+    private class MovieResponse
+    {
+        public List<Movie> d { get; set; } = new List<Movie>();
+    }
+}
